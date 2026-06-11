@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>TSURITO AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#f4f8f5;--bg2:#ffffff;--bg3:#eaf2ec;--bg4:#ddeee1;
+  --card:#ffffff;--card2:#f0f6f2;
+  --bdr:#c8dece;--bdr2:#b0ccb8;
+  --txt:#1a2e1e;--txt2:#4a6a52;--txt3:#8aaa90;
+  --green:#1c6b35;--green2:#2a8c48;--green3:#3aaa5a;
+  --green-l:#e8f5eb;--green-xl:#f0faf2;
+  --amber:#c47a0a;--amber2:#e8a020;--amber-l:#fff7e6;
+  --sky:#1a6aaa;--sky-l:#e8f3fc;
+  --coral:#d43828;--coral-l:#fef0ee;
+  --ocean:#0088aa;--ocean-l:#e8f6fc;
+  --sh:0 2px 12px rgba(26,92,42,.1);--sh2:0 4px 24px rgba(26,92,42,.16);
+  --r:12px;--r2:18px;--rf:9999px;
+  --sat:env(safe-area-inset-top,44px);--sab:env(safe-area-inset-bottom,0px);
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:'Noto Sans JP',sans-serif;font-size:15px;overscroll-behavior:none;-webkit-font-smoothing:antialiased;}
+
+/* ===== LOGIN ===== */
+#login-screen{
+  position:fixed;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:24px;
+  background:linear-gradient(160deg,#e8f5eb 0%,#f0faf2 40%,#e4f0e8 100%);
+  z-index:9999;
+}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo .mark{font-size:48px;display:block;margin-bottom:8px;filter:drop-shadow(0 4px 12px rgba(26,92,42,.25));}
+.login-logo h1{font-family:'Outfit',sans-serif;font-size:26px;font-weight:800;letter-spacing:4px;color:var(--green);line-height:1;}
+.login-logo p{font-size:11px;color:var(--txt3);margin-top:5px;letter-spacing:2px;text-transform:uppercase;}
+.login-card{background:#fff;border:1px solid var(--bdr);border-radius:var(--r2);padding:26px 22px;width:min(400px,100%);box-shadow:var(--sh2);}
+.lf{margin-bottom:14px;}
+.lf label{display:block;font-size:11px;font-weight:700;color:var(--txt3);letter-spacing:2px;margin-bottom:6px;text-transform:uppercase;}
+.lf input{width:100%;background:var(--bg3);border:1.5px solid var(--bdr);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--txt);outline:none;font-family:inherit;transition:.15s;}
+.lf input:focus{border-color:var(--green2);box-shadow:0 0 0 3px rgba(42,140,72,.12);background:#fff;}
+.login-tabs{display:flex;gap:4px;background:var(--bg3);border-radius:10px;padding:4px;margin-bottom:18px;}
+.login-tab{flex:1;text-align:center;padding:8px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;color:var(--txt3);transition:.15s;}
+.login-tab.active{background:var(--green);color:#fff;box-shadow:0 2px 8px rgba(26,92,42,.25);}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;letter-spacing:1px;box-shadow:0 4px 16px rgba(26,92,42,.25);}
+.login-btn:active{opacity:.85;}
+.login-err{font-size:12px;color:var(--coral);text-align:center;min-height:16px;margin-top:8px;font-weight:600;}
+.login-divider{text-align:center;color:var(--txt3);font-size:11px;margin:12px 0;position:relative;}
+.login-divider::before,.login-divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--bdr);}
+.login-divider::before{left:0;} .login-divider::after{right:0;}
+.key-wrap{position:relative;}
+.key-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--txt3);cursor:pointer;font-size:16px;padding:2px;}
+
+/* ===== APP SHELL ===== */
+#app{display:none;height:100dvh;flex-direction:column;}
+#app.show{display:flex;}
+
+/* ===== HEADER ===== */
+.app-hd{
+  background:var(--green);color:#fff;
+  padding:calc(var(--sat) + 6px) 12px 8px;
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+.hd-logo{font-family:'Outfit',sans-serif;font-size:16px;font-weight:800;letter-spacing:2px;color:#fff;flex:1;}
+.hd-logo small{font-size:10px;font-weight:400;letter-spacing:1px;opacity:.75;margin-left:6px;}
+.hd-user{font-size:11px;color:rgba(255,255,255,.75);background:rgba(255,255,255,.15);border-radius:var(--rf);padding:4px 10px;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hbtn{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:4px;}
+.hbtn:active{background:rgba(255,255,255,.3);}
+
+/* ===== MODE BAR ===== */
+.mode-bar{
+  display:flex;gap:5px;padding:8px 10px 6px;
+  background:var(--card);border-bottom:1px solid var(--bdr);flex-shrink:0;overflow-x:auto;scrollbar-width:none;
+}
+.mode-bar::-webkit-scrollbar{display:none;}
+.mode-btn{
+  display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--rf);
+  border:1.5px solid var(--bdr);font-size:12px;font-weight:700;
+  color:var(--txt2);background:transparent;cursor:pointer;white-space:nowrap;transition:.15s;
+}
+.mode-btn.active{border-color:var(--green2);color:var(--green);background:var(--green-l);}
+.mode-btn.active.search{border-color:var(--ocean);color:var(--ocean);background:var(--ocean-l);}
+.mode-btn.active.url{border-color:var(--sky);color:var(--sky);background:var(--sky-l);}
+.mode-btn:active{opacity:.75;}
+
+/* URL BAR */
+.url-bar{display:none;padding:6px 10px;background:var(--sky-l);border-bottom:1px solid var(--bdr);align-items:center;gap:6px;flex-shrink:0;}
+.url-bar.show{display:flex;}
+.url-inp{flex:1;background:#fff;border:1.5px solid var(--bdr2);border-radius:8px;padding:8px 11px;font-size:13px;color:var(--txt);outline:none;font-family:inherit;}
+.url-inp:focus{border-color:var(--sky);box-shadow:0 0 0 2px rgba(26,106,170,.12);}
+.url-clear{background:none;border:none;color:var(--txt3);font-size:18px;cursor:pointer;padding:2px 6px;}
+
+/* クイックボタン */
+.quick-wrap{padding:7px 10px 5px;display:flex;gap:5px;flex-wrap:wrap;border-bottom:1px solid var(--bdr);flex-shrink:0;background:var(--card);overflow-x:auto;scrollbar-width:none;}
+.quick-wrap::-webkit-scrollbar{display:none;}
+.qbtn{font-size:11px;font-weight:700;padding:5px 11px;border:1.5px solid var(--bdr);border-radius:var(--rf);background:var(--card2);color:var(--txt2);cursor:pointer;white-space:nowrap;transition:.15s;flex-shrink:0;}
+.qbtn:active{background:var(--green);color:#fff;border-color:var(--green);}
+
+/* ===== MESSAGES ===== */
+.msgs{flex:1;overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:12px;overscroll-behavior:contain;background:var(--bg);}
+.msg{display:flex;gap:8px;animation:popIn .2s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:none}}
+.msg.user{flex-direction:row-reverse;}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--card2);border:1.5px solid var(--bdr);}
+.msg.user .avatar{background:var(--green-l);border-color:var(--green2);}
+.bubble{max-width:86%;padding:11px 14px;border-radius:var(--r);font-size:14px;line-height:1.75;white-space:pre-wrap;word-break:break-word;}
+.msg.bot .bubble{background:#fff;border:1px solid var(--bdr);color:var(--txt);border-radius:4px var(--r) var(--r) var(--r);box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.msg.user .bubble{background:linear-gradient(135deg,var(--green2),var(--green));color:#fff;border-radius:var(--r) 4px var(--r) var(--r);font-weight:500;}
+.bubble img.att{max-width:200px;border-radius:10px;border:1px solid var(--bdr);margin-top:8px;display:block;}
+.src-box{margin-top:8px;padding-top:8px;border-top:1px solid var(--bdr);font-size:11px;color:var(--txt3);}
+.src-box a{color:var(--sky);text-decoration:none;}
+.typing-dots{display:flex;gap:5px;padding:4px 2px;align-items:center;}
+.typing-dots span{width:8px;height:8px;border-radius:50%;background:var(--green2);animation:dot .9s infinite;}
+.typing-dots span:nth-child(2){animation-delay:.25s;}
+.typing-dots span:nth-child(3){animation-delay:.5s;}
+@keyframes dot{0%,80%,100%{transform:scale(.4);opacity:.25}40%{transform:scale(1.1);opacity:1}}
+.sys-notice{text-align:center;font-size:11px;color:var(--txt3);padding:4px 0;}
+
+/* 画像バー */
+.img-bar{display:none;padding:8px 10px;background:var(--amber-l);border-top:1px solid var(--bdr);align-items:center;gap:8px;flex-shrink:0;}
+.img-bar.show{display:flex;}
+.img-thumb{width:44px;height:44px;object-fit:cover;border-radius:8px;border:1.5px solid var(--bdr2);}
+.img-lbl{flex:1;font-size:11px;color:var(--txt2);font-weight:700;}
+.img-rm{background:var(--coral);color:#fff;border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:700;cursor:pointer;}
+
+/* ===== INPUT BAR ===== */
+.inp-bar{background:var(--card);border-top:1px solid var(--bdr);padding:8px 10px calc(8px + var(--sab));flex-shrink:0;box-shadow:0 -2px 12px rgba(0,0,0,.06);}
+.inp-tools{display:flex;gap:5px;margin-bottom:7px;align-items:center;}
+.tool-btn{background:var(--card2);border:1.5px solid var(--bdr);color:var(--txt2);border-radius:10px;width:40px;height:40px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.15s;flex-shrink:0;}
+.tool-btn:active{background:var(--green-l);border-color:var(--green2);}
+.tool-btn.on{background:var(--green-l);border-color:var(--green2);color:var(--green);}
+.tool-btn.rec{background:rgba(212,56,40,.1);border-color:var(--coral);color:var(--coral);animation:recglow .8s infinite alternate;}
+@keyframes recglow{from{box-shadow:0 0 0 0 rgba(212,56,40,.35)}to{box-shadow:0 0 0 7px rgba(212,56,40,0)}}
+.mode-indicator{font-size:11px;font-weight:700;color:var(--green);margin-left:auto;flex-shrink:0;background:var(--green-l);padding:4px 10px;border-radius:var(--rf);border:1px solid rgba(42,140,72,.2);}
+.voice-status{display:none;font-size:11px;color:var(--coral);font-weight:700;background:rgba(212,56,40,.08);padding:3px 10px;border-radius:var(--rf);border:1px solid rgba(212,56,40,.2);}
+.inp-row{display:flex;gap:6px;align-items:flex-end;}
+.inp-ta{
+  flex:1;background:var(--bg3);border:1.5px solid var(--bdr);
+  border-radius:var(--r);padding:10px 13px;font-size:14px;
+  resize:none;outline:none;line-height:1.55;
+  max-height:110px;min-height:44px;
+  font-family:inherit;color:var(--txt);transition:.15s;
+}
+.inp-ta:focus{border-color:var(--green2);box-shadow:0 0 0 3px rgba(42,140,72,.1);background:#fff;}
+.inp-ta::placeholder{color:var(--txt3);}
+.send-btn{
+  background:linear-gradient(135deg,var(--green2),var(--green));
+  color:#fff;border:none;border-radius:var(--r);
+  width:48px;height:48px;font-size:22px;cursor:pointer;
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(26,92,42,.25);transition:.15s;
+}
+.send-btn:active{transform:scale(.93);opacity:.85;}
+.send-btn:disabled{background:var(--card2);color:var(--txt3);box-shadow:none;}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen">
+  <div class="login-logo">
+    <span class="mark">🎣</span>
+    <h1>TSURITO AI</h1>
+    <p>World's Best Fishing AI</p>
+  </div>
+  <div class="login-card">
+    <div class="login-tabs">
+      <div class="login-tab active" id="tab-email" onclick="switchLoginTab('email')">📧 メール</div>
+      <div class="login-tab" id="tab-key" onclick="switchLoginTab('key')">🔑 アクセスキー</div>
+    </div>
+    <!-- メールフォーム -->
+    <div id="login-email-form">
+      <div class="lf"><label>メールアドレス</label><input type="email" id="l-email" placeholder="example@email.com" autocomplete="email" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+      <div class="lf"><label>パスワード</label><input type="password" id="l-pass" placeholder="パスワード" autocomplete="current-password" onkeydown="if(event.key==='Enter')handleLogin()"></div>
+      <div class="login-divider">または</div>
+      <div class="lf"><label>新規登録 — 確認用パスワード</label><input type="password" id="l-pass2" placeholder="（新規登録時のみ入力）" autocomplete="new-password"></div>
+    </div>
+    <!-- アクセスキーフォーム -->
+    <div id="login-key-form" style="display:none">
+      <div class="lf"><label>アクセスキー</label>
+        <div class="key-wrap">
+          <input type="password" id="l-key" placeholder="HH-2026-..." autocomplete="off" onkeydown="if(event.key==='Enter')handleLogin()">
+          <button class="key-eye" onclick="toggleKeyEye()">👁</button>
+        </div>
+      </div>
+    </div>
+    <div class="login-err" id="l-err"></div>
+    <button class="login-btn" id="l-btn" onclick="handleLogin()">🎣 釣りAIに入室する</button>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+  <!-- HEADER -->
+  <div class="app-hd">
+    <div class="hd-logo">TSURITO <small>AI Fishing Chat</small></div>
+    <div class="hd-user" id="user-badge"></div>
+    <button class="hbtn" onclick="doLogout()">🚪</button>
+  </div>
+
+  <!-- MODE BAR -->
+  <div class="mode-bar">
+    <button class="mode-btn active" id="m-normal" onclick="setMode('normal')">💬 通常</button>
+    <button class="mode-btn" id="m-search" onclick="setMode('search')">🔍 Google検索</button>
+    <button class="mode-btn" id="m-url" onclick="setMode('url')">🔗 URL解析</button>
+    <button class="mode-btn" id="m-kyureki" onclick="setMode('kyureki')">🌙 旧暦釣果</button>
+    <button class="mode-btn" id="m-photo" onclick="setMode('photo')">📸 魚判定</button>
+  </div>
+
+  <!-- URL BAR -->
+  <div class="url-bar" id="url-bar">
+    <span style="font-size:13px;color:var(--sky);font-weight:700;flex-shrink:0">🔗 URL</span>
+    <input class="url-inp" id="url-inp" type="url" placeholder="https://... 釣果ブログのURLを入力">
+    <button class="url-clear" onclick="clearUrl()">✕</button>
+  </div>
+
+  <!-- クイックボタン -->
+  <div class="quick-wrap" id="quick-wrap">
+    <button class="qbtn" onclick="quickSend('今日の釣果は？大阪湾')">🎣 今日の釣果</button>
+    <button class="qbtn" onclick="quickSend('今日の潮回りと釣れる魚は？')">🌊 今日の潮</button>
+    <button class="qbtn" onclick="quickSend('朝マズメに釣れる魚と釣り方を教えて')">🌅 朝マズメ</button>
+    <button class="qbtn" onclick="quickSend('タチウオの釣り方をエサとルアーで教えて')">⚡ タチウオ</button>
+    <button class="qbtn" onclick="quickSend('アジングの仕掛けとコツを教えて')">🐟 アジング</button>
+    <button class="qbtn" onclick="quickSend('エギングの基本とコツを教えて')">🦑 エギング</button>
+    <button class="qbtn" onclick="quickSend('大潮の釣りを最大限活かす方法は？')">🌕 大潮攻略</button>
+    <button class="qbtn" onclick="quickSend('釣れた魚を美味しく食べる方法は？')">🍣 料理法</button>
+  </div>
+
+  <!-- 画像バー -->
+  <div class="img-bar" id="img-bar">
+    <img class="img-thumb" id="img-thumb" src="" alt="">
+    <div class="img-lbl" id="img-lbl">ファイル名</div>
+    <button class="img-rm" onclick="removeAttach()">削除</button>
+  </div>
+
+  <!-- MESSAGES -->
+  <div class="msgs" id="msgs">
+    <div class="sys-notice">🎣 TSURITO AI — 世界一の釣り情報AIへようこそ</div>
+    <div class="msg bot">
+      <div class="avatar">🎣</div>
+      <div class="bubble">こんにちは！世界一の釣り情報AIです🌊
+
+今日の釣果・釣り方・仕掛け・ポイント・魚の判定など何でも聞いてください。
+
+🔍 <b>Google検索モード</b> — 最新釣果をリアルタイム検索
+🔗 <b>URL解析モード</b> — 釣果ブログを直接解析
+🌙 <b>旧暦釣果モード</b> — 去年の同じ旧暦日の釣果を検索
+📸 <b>魚判定モード</b> — 写真から魚種・サイズを判定
+🎤 <b>マイク</b> — 音声で質問
+📷 <b>カメラ・画像</b> — 魚の写真を送る</div>
+    </div>
+  </div>
+
+  <!-- INPUT BAR -->
+  <div class="inp-bar">
+    <div class="inp-tools">
+      <!-- マイク -->
+      <button class="tool-btn" id="mic-btn" onclick="toggleVoice()" title="音声入力">🎤</button>
+      <!-- カメラ -->
+      <button class="tool-btn" onclick="triggerCamera()" title="カメラ">📷</button>
+      <!-- 画像 -->
+      <button class="tool-btn" onclick="triggerImage()" title="画像を選択">🖼</button>
+      <!-- 音声状態 -->
+      <div class="voice-status" id="voice-status">🔴 録音中...</div>
+      <!-- モード表示 -->
+      <div class="mode-indicator" id="mode-indicator">💬 通常</div>
+    </div>
+    <div class="inp-row">
+      <textarea class="inp-ta" id="main-ta" rows="1" placeholder="釣りのことなら何でも聞いてください..." onkeydown="onTaKey(event)" oninput="resizeTa(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMsg()">🎣</button>
+    </div>
+  </div>
+
+  <!-- 隠しinput -->
+  <input type="file" id="cam-input" accept="image/*" capture="environment" style="display:none" onchange="onFileSelected(event,'camera')">
+  <input type="file" id="img-input" accept="image/*" style="display:none" onchange="onFileSelected(event,'image')">
+</div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, addDoc, query, orderBy, getDocs, deleteDoc, doc }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+const app = initializeApp({
+  apiKey:"AIzaSyCVk2miG5TK1ffTofXLh0hHgeSbOvmIgZ8",
+  authDomain:"kensetsu-nippo-842a2.firebaseapp.com",
+  projectId:"kensetsu-nippo-842a2",
+  storageBucket:"kensetsu-nippo-842a2.firebasestorage.app",
+  messagingSenderId:"702880974315",
+  appId:"1:702880974315:web:985321dc9180046629c5ae"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+window.__fb = {
+  auth, db,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  signOut, onAuthStateChanged,
+  collection, addDoc, query, orderBy, getDocs, deleteDoc, doc
+};
+window.dispatchEvent(new Event('fbReady'));
+</script>
+
+<script>
+'use strict';
+
+// ===== CONFIG =====
+var FUNCTIONS_BASE = (location.hostname==='localhost'||location.hostname==='127.0.0.1')
+  ? 'http://localhost:5001/kensetsu-nippo-842a2/us-central1'
+  : 'https://us-central1-kensetsu-nippo-842a2.cloudfunctions.net';
+var ACCESS_KEY = 'TSURITO-2026-FISH';
+
+// ===== STATE =====
+var state = {
+  uid: null,
+  keyLogin: false,
+  mode: 'normal',
+  attachData: null,
+  attachType: null,
+  attachName: null,
+  sending: false,
+};
+
+// ===== Firebase =====
+function fb(){ return window.__fb; }
+
+// ===== callGemini =====
+async function callGemini(prompt, useSearch, useUrl, mediaContents){
+  var body = { prompt, model:'gemini-2.5-flash' };
+  if(useSearch) body.useSearch = true;
+  if(useUrl) body.useUrl = useUrl;
+  if(mediaContents && mediaContents.length) body.mediaContents = mediaContents;
+  var r = await fetch(FUNCTIONS_BASE + '/askClaude', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  if(!r.ok){ var e=await r.json().catch(()=>({})); throw new Error('通信エラー '+(e?.error?.message||r.status)); }
+  var d = await r.json();
+  return d?.candidates?.[0]?.content?.parts?.[0]?.text || d?.text || d?.result || '応答なし';
+}
+
+// ===== AUTH =====
+function initAuth(){
+  if(!window.__fb){ window.addEventListener('fbReady', initAuth, {once:true}); return; }
+  fb().onAuthStateChanged(fb().auth, function(user){
+    if(user){ state.uid=user.uid; showApp(user.email); }
+    else if(!state.keyLogin){ showLogin(); }
+  });
+}
+document.addEventListener('DOMContentLoaded', initAuth);
+
+var loginTabMode = 'email';
+function switchLoginTab(t){
+  loginTabMode = t;
+  document.getElementById('tab-email').classList.toggle('active', t==='email');
+  document.getElementById('tab-key').classList.toggle('active', t==='key');
+  document.getElementById('login-email-form').style.display = t==='email'?'block':'none';
+  document.getElementById('login-key-form').style.display = t==='key'?'block':'none';
+}
+
+function toggleKeyEye(){
+  var inp = document.getElementById('l-key');
+  inp.type = inp.type==='password' ? 'text' : 'password';
+}
+
+function handleLogin(){
+  if(loginTabMode==='email') doLogin(); else doKeyLogin();
+}
+
+async function doLogin(){
+  var email = document.getElementById('l-email').value.trim();
+  var pass  = document.getElementById('l-pass').value;
+  var pass2 = document.getElementById('l-pass2').value;
+  var err   = document.getElementById('l-err');
+  err.textContent = '';
+  if(!email||!pass){ err.textContent='メールとパスワードを入力してください'; return; }
+  var btn = document.getElementById('l-btn');
+  btn.textContent='認証中...'; btn.disabled=true;
+  try{
+    if(pass2){
+      // 新規登録
+      if(pass!==pass2){ err.textContent='パスワードが一致しません'; btn.textContent='🎣 釣りAIに入室する'; btn.disabled=false; return; }
+      await fb().createUserWithEmailAndPassword(fb().auth, email, pass);
+    } else {
+      await fb().signInWithEmailAndPassword(fb().auth, email, pass);
+    }
+  }catch(e){
+    var m = {
+      'auth/invalid-credential':'メールまたはパスワードが間違っています',
+      'auth/email-already-in-use':'このメールは既に登録済みです',
+      'auth/weak-password':'パスワードは6文字以上にしてください',
+      'auth/too-many-requests':'しばらく待ってから再試行してください',
+      'auth/invalid-email':'メールアドレスの形式が正しくありません',
+    };
+    err.textContent = m[e.code] || 'ログインに失敗しました: '+e.code;
+  }
+  btn.textContent='🎣 釣りAIに入室する'; btn.disabled=false;
+}
+
+function doKeyLogin(){
+  var key = document.getElementById('l-key').value.trim();
+  var err = document.getElementById('l-err');
+  if(key===ACCESS_KEY){
+    state.keyLogin=true; state.uid='key-'+Date.now();
+    showApp('ゲストユーザー');
+  } else {
+    err.textContent='アクセスキーが正しくありません';
+  }
+}
+
+async function doLogout(){
+  if(!confirm('ログアウトしますか？'))return;
+  if(!state.keyLogin){ await fb().signOut(fb().auth); }
+  state.keyLogin=false; state.uid=null;
+  showLogin();
+}
+
+function showLogin(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').classList.remove('show');
+}
+function showApp(email){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').classList.add('show');
+  document.getElementById('user-badge').textContent = email||'';
+}
+
+// ===== MODE =====
+function setMode(m){
+  state.mode = m;
+  var modes = ['normal','search','url','kyureki','photo'];
+  modes.forEach(function(k){
+    var btn = document.getElementById('m-'+k);
+    if(!btn) return;
+    btn.classList.remove('active','search','url');
+    if(k===m){
+      btn.classList.add('active');
+      if(k==='search') btn.classList.add('search');
+      if(k==='url') btn.classList.add('url');
+    }
+  });
+  var urlBar = document.getElementById('url-bar');
+  urlBar.classList.toggle('show', m==='url');
+  var ta = document.getElementById('main-ta');
+  var ind = document.getElementById('mode-indicator');
+  var styles = {
+    normal:  {ph:'釣りのことなら何でも聞いてください...', ind:'💬 通常', c:'var(--green)'},
+    search:  {ph:'🔍 検索して調べたいことを... 例：今日の大阪湾の釣果', ind:'🔍 Google検索', c:'var(--ocean)'},
+    url:     {ph:'🔗 URLのページについて質問してください...', ind:'🔗 URL解析', c:'var(--sky)'},
+    kyureki: {ph:'🌙 場所と魚種を入力 例：大阪湾 タチウオ', ind:'🌙 旧暦釣果', c:'var(--amber)'},
+    photo:   {ph:'📸 魚の写真を送って種類・特徴を判定！', ind:'📸 魚判定', c:'var(--coral)'},
+  };
+  var s = styles[m] || styles.normal;
+  ta.placeholder = s.ph;
+  ind.textContent = s.ind;
+  ind.style.background = s.c+'22';
+  ind.style.color = s.c;
+  ind.style.borderColor = s.c+'44';
+  if(m==='photo') triggerImage();
+}
+
+function clearUrl(){
+  document.getElementById('url-inp').value='';
+  setMode('normal');
+}
+
+// ===== QUICK =====
+function quickSend(txt){
+  document.getElementById('main-ta').value = txt;
+  sendMsg();
+}
+
+// ===== VOICE =====
+var voiceRec=null, voiceOn=false;
+function toggleVoice(){
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){
+    alert('このブラウザは音声入力未対応です。Chromeをお試しください。'); return;
+  }
+  var btn = document.getElementById('mic-btn');
+  var vstat = document.getElementById('voice-status');
+  if(voiceOn){
+    voiceRec&&voiceRec.stop(); voiceOn=false;
+    btn.classList.remove('rec'); vstat.style.display='none'; return;
+  }
+  var SR = window.SpeechRecognition||window.webkitSpeechRecognition;
+  voiceRec = new SR(); voiceRec.lang='ja-JP'; voiceRec.continuous=false; voiceRec.interimResults=true;
+  var ta = document.getElementById('main-ta');
+  voiceOn=true; btn.classList.add('rec'); vstat.style.display='block';
+  voiceRec.onresult = function(e){
+    var t=''; for(var i=e.resultIndex;i<e.results.length;i++) t+=e.results[i][0].transcript;
+    ta.value=t; resizeTa(ta);
+  };
+  voiceRec.onend = function(){ voiceOn=false; btn.classList.remove('rec'); vstat.style.display='none'; };
+  voiceRec.onerror = function(e){
+    voiceOn=false; btn.classList.remove('rec'); vstat.style.display='none';
+    if(e.error!=='no-speech') alert('音声エラー: '+e.error);
+  };
+  voiceRec.start();
+}
+
+// ===== CAMERA / IMAGE =====
+function triggerCamera(){ document.getElementById('cam-input').click(); }
+function triggerImage(){ document.getElementById('img-input').click(); }
+
+function onFileSelected(e, type){
+  var file = e.target.files[0]; if(!file) return;
+  state.attachName = file.name;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    state.attachData = ev.target.result;
+    state.attachType = type;
+    var thumb = document.getElementById('img-thumb');
+    var lbl = document.getElementById('img-lbl');
+    var bar = document.getElementById('img-bar');
+    thumb.src = ev.target.result;
+    lbl.textContent = file.name + ' (' + Math.round(file.size/1024) + 'KB)';
+    bar.classList.add('show');
+    // 魚判定モードなら自動送信
+    if(state.mode==='photo'){
+      var ta = document.getElementById('main-ta');
+      if(!ta.value) ta.value='この魚の種類・特徴・食べ方・生息域を詳しく教えてください。サイズも推測して。';
+    }
+  };
+  reader.readAsDataURL(file);
+  e.target.value='';
+}
+
+function removeAttach(){
+  state.attachData=null; state.attachType=null; state.attachName=null;
+  document.getElementById('img-bar').classList.remove('show');
+  document.getElementById('img-thumb').src='';
+}
+
+// ===== 旧暦計算 =====
+function calcAge(d){var k=new Date(2000,0,6,18,14,0);var a=(d-k)/86400000%29.530588853;if(a<0)a+=29.530588853;return Math.round(a*10)/10;}
+function getLunarDate(date){
+  var a=calcAge(date);
+  var day=Math.min(30,Math.ceil(a)+1);
+  var dayOfYear=Math.floor((date-new Date(date.getFullYear(),0,1))/86400000);
+  var month=Math.min(12,Math.max(1,Math.floor(dayOfYear/29.53)+1));
+  return{month,day};
+}
+function getSameLunarDay(lunarMonth,lunarDay,targetYear){
+  var base=new Date(targetYear,0,1);
+  var best=null,bestDiff=999;
+  for(var i=0;i<400;i++){
+    var dt=new Date(base);dt.setDate(base.getDate()+i);
+    var a=calcAge(dt);
+    var d2=Math.min(30,Math.ceil(a)+1);
+    var doy=Math.floor((dt-new Date(dt.getFullYear(),0,1))/86400000);
+    var m2=Math.min(12,Math.max(1,Math.floor(doy/29.53)+1));
+    var diff=Math.abs(m2*30+d2-(lunarMonth*30+lunarDay));
+    if(diff<bestDiff){bestDiff=diff;best=dt;}
+    if(m2===lunarMonth&&d2===lunarDay){best=dt;break;}
+  }
+  return best;
+}
+
+// ===== SEND =====
+async function sendMsg(){
+  if(state.sending) return;
+  var ta = document.getElementById('main-ta');
+  var text = ta.value.trim();
+  if(!text && !state.attachData) return;
+  state.sending = true;
+  var sendBtn = document.getElementById('send-btn');
+  sendBtn.disabled=true;
+
+  // ユーザーバブル追加
+  var userHtml = text || '';
+  if(state.attachData){
+    userHtml += (userHtml?'\n\n':'') + '<img class="att" src="'+state.attachData+'" alt="添付画像">';
+  }
+  addMsg('user', userHtml);
+  ta.value=''; resizeTa(ta);
+
+  // タイピング表示
+  var typingId = addTyping();
+
+  try{
+    var now = new Date();
+    var age = calcAge(now);
+    var lunar = getLunarDate(now);
+
+    // コンテキスト付きプロンプト
+    var ctx = '【釣りAI コンテキスト】現在：'+now.getFullYear()+'年'+(now.getMonth()+1)+'月'+now.getDate()+'日、月齢'+age.toFixed(1)+'、旧暦'+lunar.month+'月'+lunar.day+'日。\n\nあなたは世界一の釣り情報インフルエンサーです。釣り人の立場で、科学的根拠・実際の釣果・エサとルアー両軸で具体的にアドバイスしてください。\n\n';
+
+    var prompt = '';
+    var useSearch = false;
+    var useUrl = '';
+    var mediaContents = null;
+
+    // モード別プロンプト設定
+    if(state.mode==='search'){
+      useSearch = true;
+      prompt = ctx + 'Google検索で最新の釣果情報を調べて詳しく教えてください。\n\n質問：' + text;
+    } else if(state.mode==='url'){
+      useUrl = document.getElementById('url-inp').value.trim();
+      prompt = ctx + (useUrl?'以下のURLの釣果情報を読んで、':'') + '質問：' + text;
+    } else if(state.mode==='kyureki'){
+      useSearch = true;
+      var ly1 = getSameLunarDay(lunar.month,lunar.day,now.getFullYear()-1);
+      var ly2 = getSameLunarDay(lunar.month,lunar.day,now.getFullYear()-2);
+      var d1 = ly1?(ly1.getFullYear()+'年'+(ly1.getMonth()+1)+'月'+ly1.getDate()+'日'):'';
+      var d2 = ly2?(ly2.getFullYear()+'年'+(ly2.getMonth()+1)+'月'+ly2.getDate()+'日'):'';
+      prompt = ctx + '今日は旧暦'+lunar.month+'月'+lunar.day+'日です。\n昨年の同旧暦日（'+d1+'）と一昨年の同旧暦日（'+d2+'）の釣果をGoogle検索で調べて、「'+text+'」について詳しく教えてください。旧暦が同じ日は潮回りが似ているため過去の釣果が参考になります。';
+    } else if(state.mode==='photo'||state.attachData){
+      if(state.attachData){
+        var base64 = state.attachData.replace(/^data:[^;]+;base64,/, '');
+        var mimeType = state.attachData.match(/^data:([^;]+)/)?.[1] || 'image/jpeg';
+        mediaContents = [{ type: mimeType, base64: state.attachData }];
+      }
+      prompt = ctx + (text||'この魚の種類・特徴・食べ方・生息域・サイズを詳しく教えてください。');
+    } else {
+      prompt = ctx + text;
+    }
+
+    var resp = await callGemini(prompt, useSearch, useUrl||null, mediaContents);
+    removeTyping(typingId);
+    addMsg('bot', resp);
+
+  } catch(e){
+    removeTyping(typingId);
+    addMsg('bot', '⚠️ エラーが発生しました: '+e.message+'\n\nしばらく待ってから再試行してください。');
+  }
+
+  removeAttach();
+  state.sending=false;
+  sendBtn.disabled=false;
+}
+
+// ===== MESSAGES =====
+var msgIdCounter = 0;
+function addMsg(role, html){
+  var msgs = document.getElementById('msgs');
+  var id = 'msg-'+(++msgIdCounter);
+  var avatar = role==='user' ? '👤' : '🎣';
+  var div = document.createElement('div');
+  div.className = 'msg '+(role==='user'?'user':'bot');
+  div.id = id;
+  div.innerHTML = '<div class="avatar">'+avatar+'</div><div class="bubble">'+html+'</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return id;
+}
+function addTyping(){
+  var msgs = document.getElementById('msgs');
+  var id = 'typing-'+(++msgIdCounter);
+  var div = document.createElement('div');
+  div.className='msg bot'; div.id=id;
+  div.innerHTML='<div class="avatar">🎣</div><div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  msgs.appendChild(div);
+  msgs.scrollTop=msgs.scrollHeight;
+  return id;
+}
+function removeTyping(id){
+  var el=document.getElementById(id);if(el)el.remove();
+}
+
+// ===== TEXTAREA =====
+function resizeTa(ta){
+  ta.style.height='auto';
+  ta.style.height=Math.min(ta.scrollHeight,110)+'px';
+}
+function onTaKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){
+    e.preventDefault(); sendMsg();
+  }
+}
+</script>
+</body>
+</html>
